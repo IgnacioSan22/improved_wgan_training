@@ -52,9 +52,9 @@ ACGAN_SCALE = 1. # How to scale the critic's ACGAN loss relative to WGAN loss
 ACGAN_SCALE_G = 0.1 # How to scale generator's ACGAN loss relative to WGAN loss
 
 if CONDITIONAL and (not ACGAN) and (not NORMALIZATION_D):
-    print "WARNING! Conditional model without normalization in D might be effectively unconditional!"
+    print( "WARNING! Conditional model without normalization in D might be effectively unconditional!")
 
-DEVICES = ['/gpu:{}'.format(i) for i in xrange(N_GPUS)]
+DEVICES = ['/gpu:{}'.format(i) for i in range(N_GPUS)]
 if len(DEVICES) == 1: # Hack because the code assumes 2 GPUs
     DEVICES = [DEVICES[0], DEVICES[0]]
 
@@ -324,7 +324,7 @@ with tf.Session() as session:
     samples_100 = Generator(100, fake_labels_100)
     def get_inception_score(n):
         all_samples = []
-        for i in xrange(n/100):
+        for i in range(n/100):
             all_samples.append(session.run(samples_100))
         all_samples = np.concatenate(all_samples, axis=0)
         all_samples = ((all_samples+1.)*(255.99/2)).astype('int32')
@@ -339,7 +339,7 @@ with tf.Session() as session:
 
 
     for name,grads_and_vars in [('G', gen_gv), ('D', disc_gv)]:
-        print "{} Params:".format(name)
+        print( "{} Params:".format(name))
         total_param_count = 0
         for g, v in grads_and_vars:
             shape = v.get_shape()
@@ -351,24 +351,22 @@ with tf.Session() as session:
             total_param_count += param_count
 
             if g == None:
-                print "\t{} ({}) [no grad!]".format(v.name, shape_str)
+                print( "\t{} ({}) [no grad!]".format(v.name, shape_str))
             else:
-                print "\t{} ({})".format(v.name, shape_str)
-        print "Total param count: {}".format(
-            locale.format("%d", total_param_count, grouping=True)
-        )
+                print( "\t{} ({})".format(v.name, shape_str))
+        print( "Total param count: {}".format(locale.format("%d", total_param_count, grouping=True)))
 
     session.run(tf.initialize_all_variables())
 
     gen = inf_train_gen()
 
-    for iteration in xrange(ITERS):
+    for iteration in range(ITERS):
         start_time = time.time()
 
         if iteration > 0:
             _ = session.run([gen_train_op], feed_dict={_iteration:iteration})
 
-        for i in xrange(N_CRITIC):
+        for i in range(N_CRITIC):
             _data,_labels = gen.next()
             if CONDITIONAL and ACGAN:
                 _disc_cost, _disc_wgan, _disc_acgan, _disc_acgan_acc, _disc_acgan_fake_acc, _ = session.run([disc_cost, disc_wgan, disc_acgan, disc_acgan_acc, disc_acgan_fake_acc, disc_train_op], feed_dict={all_real_data_int: _data, all_real_labels:_labels, _iteration:iteration})
