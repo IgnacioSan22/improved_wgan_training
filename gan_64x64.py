@@ -22,7 +22,7 @@ import tflib.plot
 
 # Download 64x64 ImageNet at http://image-net.org/small/download.php and
 # fill in the path to the extracted files here!
-DATA_DIR = ''
+DATA_DIR = '../render_dataset_blob_rotate_random/64px_dataset_stpeters/'
 if len(DATA_DIR) == 0:
     raise Exception('Please specify path to data directory in gan_64x64.py!')
 
@@ -476,7 +476,7 @@ with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as session:
         with tf.device(device):
 
             real_data = tf.reshape(2*((tf.cast(real_data_conv, tf.float32)/255.)-.5), [int(BATCH_SIZE/len(DEVICES)), OUTPUT_DIM])
-            fake_data = Generator(BATCH_SIZE/len(DEVICES))
+            fake_data = Generator(int(BATCH_SIZE/len(DEVICES)))
 
             disc_real = Discriminator(real_data)
             disc_fake = Discriminator(fake_data)
@@ -490,7 +490,7 @@ with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as session:
                 disc_cost = tf.reduce_mean(disc_fake) - tf.reduce_mean(disc_real)
 
                 alpha = tf.random_uniform(
-                    shape=[BATCH_SIZE/len(DEVICES),1], 
+                    shape=[int(BATCH_SIZE/len(DEVICES)),1], 
                     minval=0.,
                     maxval=1.
                 )
@@ -565,7 +565,7 @@ with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as session:
     fixed_noise = tf.constant(np.random.normal(size=(BATCH_SIZE, 128)).astype('float32'))
     all_fixed_noise_samples = []
     for device_index, device in enumerate(DEVICES):
-        n_samples = BATCH_SIZE / len(DEVICES)
+        n_samples = int(BATCH_SIZE / len(DEVICES))
         all_fixed_noise_samples.append(Generator(n_samples, noise=fixed_noise[device_index*n_samples:(device_index+1)*n_samples]))
     if tf.__version__.startswith('1.'):
         all_fixed_noise_samples = tf.concat(all_fixed_noise_samples, axis=0)
@@ -586,10 +586,10 @@ with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as session:
                 yield images
 
     # Save a batch of ground-truth samples
-    _x = inf_train_gen().next()
-    _x_r = session.run(real_data, feed_dict={real_data_conv: _x[:BATCH_SIZE/N_GPUS]})
+    _x = inf_train_gen().__next__()
+    _x_r = session.run(real_data, feed_dict={real_data_conv: _x[:int(BATCH_SIZE/N_GPUS)]})
     _x_r = ((_x_r+1.)*(255.99/2)).astype('int32')
-    lib.save_images.save_images(_x_r.reshape((BATCH_SIZE/N_GPUS, 3, 64, 64)), 'samples_groundtruth.png')
+    lib.save_images.save_images(_x_r.reshape((int(BATCH_SIZE/N_GPUS), 3, 64, 64)), 'samples_groundtruth.png')
 
 
     # Train loop
