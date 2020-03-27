@@ -3,13 +3,16 @@ import numpy as np
 import os
 import urllib
 import gzip
-import cPickle as pickle
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 def unpickle(file):
     fo = open(file, 'rb')
-    dict = pickle.load(fo)
+    dict = pickle.load(fo, encoding='bytes')
     fo.close()
-    return dict['data'], dict['labels']
+    return dict[b'data'], dict[b'labels']
 
 def cifar_generator(filenames, batch_size, data_dir):
     all_data = []
@@ -28,7 +31,7 @@ def cifar_generator(filenames, batch_size, data_dir):
         np.random.set_state(rng_state)
         np.random.shuffle(labels)
 
-        for i in range(len(images) / batch_size):
+        for i in range(len(images) // batch_size):
             yield (images[i*batch_size:(i+1)*batch_size], labels[i*batch_size:(i+1)*batch_size])
 
     return get_epoch

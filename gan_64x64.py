@@ -586,14 +586,14 @@ with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as session:
                 yield images
 
     # Save a batch of ground-truth samples
-    _x = inf_train_gen().__next__()
+    _x = next(inf_train_gen())
     _x_r = session.run(real_data, feed_dict={real_data_conv: _x[:int(BATCH_SIZE/N_GPUS)]})
     _x_r = ((_x_r+1.)*(255.99/2)).astype('int32')
-    lib.save_images.save_images(_x_r.reshape((int(BATCH_SIZE/N_GPUS), 3, 64, 64)), 'samples_groundtruth.png')
+    lib.save_images.save_images(_x_r.reshape((int(BATCH_SIZE/N_GPUS), 3, 64, 64)), 'imagenet/samples_groundtruth.png')
 
 
     # Train loop
-    session.run(tf.initialize_all_variables())
+    session.run(tf.global_variables_initializer())
     gen = inf_train_gen()
     for iteration in range(ITERS):
 
@@ -609,7 +609,7 @@ with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as session:
         else:
             disc_iters = CRITIC_ITERS
         for i in range(disc_iters):
-            _data = gen.next()
+            _data = next(gen)
             _disc_cost, _ = session.run([disc_cost, disc_train_op], feed_dict={all_real_data_conv: _data})
             if MODE == 'wgan':
                 _ = session.run([clip_disc_weights])
@@ -628,6 +628,6 @@ with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as session:
             generate_image(iteration)
 
         if (iteration < 5) or (iteration % 200 == 199):
-            lib.plot.flush()
+            lib.plot.flush('imagenet')
 
         lib.plot.tick()
