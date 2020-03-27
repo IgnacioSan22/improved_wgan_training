@@ -24,8 +24,8 @@ def make_generator(path, batch_size):
 
 def load(batch_size, data_dir='../sdgan/data/shoes4k/'):
     return (
-        make_generator(data_dir+'/train/', batch_size),
-        make_generator(data_dir+'/valid/', batch_size)
+        make_generator(data_dir+'train/', batch_size),
+        make_generator(data_dir+'valid/', batch_size)
     )
 
 if __name__ == '__main__':
